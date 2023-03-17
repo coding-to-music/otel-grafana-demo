@@ -1,3 +1,31 @@
+# otel-grafana-demo
+
+# 🚀 Demo application showing how to instrument a Node application with OpenTelemetry, Prometheus, Jaeger, Loki, and Grafana. Built with Next.js, Fastify, and Postgres. 🚀
+
+https://github.com/coding-to-music/otel-grafana-demo
+
+From / By https://github.com/connorlindsey/otel-grafana-demo
+
+https://www.youtube.com/watch?v=ifwfyMNcMiM&ab_channel=UtahJS
+
+## Environment variables:
+
+```java
+
+```
+
+## GitHub
+
+```java
+git init
+git add .
+git remote remove origin
+git commit -m "first commit"
+git branch -M main
+git remote add origin git@github.com:coding-to-music/otel-grafana-demo.git
+git push -u origin main
+```
+
 # OpenTelemetry - Grafana Demo
 Author: Connor Lindsey
 

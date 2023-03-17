@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "deploy": "git add . && git commit -m Build && git push",
     "dev": "docker-compose up",
     "dev:app": "docker-compose up app api db"
   }
