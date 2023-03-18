@@ -67,7 +67,7 @@ This demo application demonstrates how to monitor a JavaScript application using
 
 
 - [Grafana](http://localhost:4000) - Visualize all of our observability data.
-- [NextJS App](http://localhost:3000) - Visualize all of our observability data.
+- [NextJS App](http://localhost:3000) - NextJS app that we will monitor using OpenTelemetry and Grafana
 - [API](http://localhost:8080)
 
 DATABASE_URL: "postgresql://postgres:localpost@db:5432/otel-grafana-demo"
