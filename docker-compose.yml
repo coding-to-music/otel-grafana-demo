@@ -91,4 +91,4 @@ services:
     volumes:
       - ./config/provisioning/:/etc/grafana/provisioning
     ports:
-      - 3000:3000
+      - 4000:3000
