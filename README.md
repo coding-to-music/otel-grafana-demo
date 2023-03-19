@@ -60,6 +60,29 @@ This demo application demonstrates how to monitor a JavaScript application using
 - [OpenTelemetry Status](https://opentelemetry.io/status/)
 - [UtahJS Slides](https://bit.ly/3oBobaQ)
 
+## Overview of services ports and purpose 
+
+## Working
+
+| Status | Service | Port | Description | Comments |
+| -------- | -------- | -------- | -------- | -------- |
+| Verify | Postgres | localpost@db:5432/otel-grafana-demo | Database | No Errors |
+| Works | Grafana | [http://localhost:4000](http://localhost:4000) | Visualize all | No Errors |
+| Works | Jaeger | [http://localhost:16686/search](http://localhost:16686/search) | Distributed tracing backend | No Errors |
+| Works | Promtail | ???? | ???? | error="Post \"http://loki:3100/loki/api/v1/push\": dial tcp: lookup loki on 127.0.0.11:53: server misbehaving" |
+| Mostly Works | app NextJS App | [http://localhost:3000](http://localhost:3000) | NextJS app that we will monitor | Category does not load, cannot save data |
+| Works | Prisma | NA | Database Schema abstraction | Loaded by api service |
+| Works | API | [http://localhost:8080](http://localhost:8080) | via Nodeman, calls prisma, connects to DB | node crypto hash: error:0308010C:digital envelope routines::unsupported |
+
+## Issues and need to verify
+
+| Status | Service | Port | Description | Comments |
+| -------- | -------- | -------- | -------- | -------- |
+| Errors | Loki | [http://localhost:XXXX](http://localhost:XXXX) | Logs aggregation system | creating WAL folder at "/wal": mkdir wal: permission denied |
+| Works | Prometheus | [http://localhost:9090](http://localhost:9090) | Metrics and alerting backend | EEEEE |
+| Verify | API - Metrics | [http://localhost:9464](http://localhost:9464) | ZZZZ | EEEEE |
+| Verify | OpenTelemetry | YYYY | Instrument the application | EEEEE |
+
 ## Ports
 
 - [Jaeger http://localhost:16686/search](http://localhost:16686/search) - Distributed tracing backend.
