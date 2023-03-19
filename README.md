@@ -62,13 +62,13 @@ This demo application demonstrates how to monitor a JavaScript application using
 
 ## Ports
 
-- [Jaeger](http://localhost:16686/search) - Distributed tracing backend.
-- [Prometheus](http://localhost:9090) - Metrics and alerting backend.
+- [Jaeger http://localhost:16686/search](http://localhost:16686/search) - Distributed tracing backend.
+- [Prometheus http://localhost:9090](http://localhost:9090) - Metrics and alerting backend.
 
 
-- [Grafana](http://localhost:4000) - Visualize all of our observability data.
-- [NextJS App](http://localhost:3000) - NextJS app that we will monitor using OpenTelemetry and Grafana
-- [API](http://localhost:8080)
+- [Grafana http://localhost:4000](http://localhost:4000) - Visualize all of our observability data.
+- [NextJS App http://localhost:3000](http://localhost:3000) - NextJS app that we will monitor using OpenTelemetry and Grafana
+- [API http://localhost:8080](http://localhost:8080)
 
 DATABASE_URL: "postgresql://postgres:localpost@db:5432/otel-grafana-demo"
 
@@ -77,13 +77,146 @@ DATABASE_URL: "postgresql://postgres:localpost@db:5432/otel-grafana-demo"
 
 There is no pre-built dashboard for Grafana
  
-- [API - Metrics](http://localhost:9464)
+- [API - Metrics http://localhost:9464](http://localhost:9464)
 
-- [Loki](http://localhost:XXXX) - Logs aggregation system.
-- [OpenTelemetry](http://localhost:XXXX) - Instrument the application and send observability data to each backend.
+- [Loki http://localhost:XXXX](http://localhost:XXXX) - Logs aggregation system.
+- [OpenTelemetry http://localhost:XXXX](http://localhost:XXXX) - Instrument the application and send observability data to each backend.
 
 http://localhost:9080/
 http://localhost:3100/ Loki
+
+## docker-compose.yml
+
+```java
+version: "3.7"
+
+services:
+  db:
+    container_name: db
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: otel-grafana-demo
+      POSTGRES_PASSWORD: localpost
+    volumes:
+      - ./db/data/:/var/lib/postgresql/data/ # Persist data locally
+    ports:
+      - 5432:5432
+  api:
+    container_name: api
+    build: ./api
+    environment:
+      DATABASE_URL: "postgresql://postgres:localpost@db:5432/otel-grafana-demo"
+    volumes:
+      - ./api:/usr/api
+      - ./data/api/:/usr/api/data/
+      - /usr/api/node_modules
+    ports:
+      - 8080:8080 # API
+      - 9464:9464 # Metrics API
+    command: ./setup.sh
+    depends_on: 
+      - db
+  app:
+    container_name: app
+    build: ./app
+    command: npm run dev -- -p 80
+    volumes:
+      - ./app:/usr/app
+      - /usr/app/node_modules
+    ports:
+      - 80:80
+    depends_on: 
+      - api
+      - db
+  # Observability services
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "9411:9411"
+  prometheus:
+    image: prom/prometheus:latest
+    user: root
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
+
+  promtail:
+    image: grafana/promtail
+    volumes:
+      - ./config/promtail/promtail-config.yaml:/etc/promtail/promtail-config.yaml
+      - ./data/api/:/usr/api/data/
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    depends_on:
+      - api
+      - loki
+
+  loki:
+    image: grafana/loki
+    ports:
+      - 3100:3100
+    volumes:
+      - ./config/loki/loki-config.yaml:/etc/loki/loki-config.yaml
+      - ./data/loki/data:/data/loki
+    command: -config.file=/etc/loki/loki-config.yaml
+
+  grafana:
+    image: grafana/grafana:main
+    environment: 
+      # Disable authentication
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./config/provisioning/:/etc/grafana/provisioning
+    ports:
+      - 4000:3000
+```
+
+## Start via 
+
+```
+# from the main root directory
+
+npm run dev --ask-become-pass
+```
+
+Output
+
+```java
+> otel-grafana-demo@0.1.0 dev
+> docker-compose up
+
+Starting otel-grafana-demo_jaeger_1     ... done
+Starting otel-grafana-demo_grafana_1    ... done
+Starting otel-grafana-demo_prometheus_1 ... done
+Starting db                             ... done
+Starting otel-grafana-demo_loki_1       ... done
+Starting api                            ... done
+Starting app                            ... done
+Starting otel-grafana-demo_promtail_1   ... done
+Attaching to otel-grafana-demo_grafana_1, otel-grafana-demo_prometheus_1, otel-grafana-demo_loki_1, otel-grafana-demo_jaeger_1, db, api, app, otel-grafana-demo_promtail_1
+db            | 
+db            | PostgreSQL Database directory appears to contain a database; Skipping initialization
+db            | 
+db            | 2023-03-19 01:25:14.356 UTC [1] LOG:  starting PostgreSQL 15.2 (Debian 15.2-1.pgdg110+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 10.2.1-6) 10.2.1 20210110, 64-bit
+db            | 2023-03-19 01:25:14.363 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+db            | 2023-03-19 01:25:14.367 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+db            | 2023-03-19 01:25:14.377 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+db            | 2023-03-19 01:25:14.382 UTC [32] LOG:  database system was shut down at 2023-03-18 22:15:57 UTC
+db            | 2023-03-19 01:25:14.442 UTC [1] LOG:  database system is ready to accept connections
+```
 
 ## More messages
 
