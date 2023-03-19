@@ -29,6 +29,8 @@ services:
       - db
   app:
     container_name: app
+    environment:
+      NODE_VERSION: 16
     build: ./app
     command: npm run dev -- -p 80
     volumes:
